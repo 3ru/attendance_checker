@@ -53,7 +53,7 @@ def main(uid, card_type):
     return user_name, flag
 
 
-def output():
+def output(safe=True):
     with sqlite3.connect(dbname) as conn:
         cur = conn.cursor()
         df_log = pd.read_sql('SELECT * FROM log', conn)
@@ -63,11 +63,17 @@ def output():
         df = df.reindex(columns=['time', 'state', 'name']).sort_values("time").rename(
             columns={"time": "時刻", "state": "勤怠", "name": "名前"})
         n = str(datetime.now()).replace(':', '').replace('.', '').replace('-', '').replace(' ', '')
-        df.to_csv(f'logs/{n}_attendance_log.csv', encoding='cp932', index=False)
-        print("logsフォルダ下に出力されました\n")
+        file_name_footer = "attendance_log" if safe else "delete_backup"
+        df.to_csv(f'logs/{n}_{file_name_footer}.csv', encoding='cp932', index=False)
+        print(df)
         cur.close()
     return None
 
 
-# output()
-# make_db()
+def delete():
+    with sqlite3.connect(dbname) as conn:
+        cur = conn.cursor()
+        cur.execute('DROP TABLE IF EXISTS USER')
+        cur.execute('DROP TABLE IF EXISTS ATTENDANCE')
+        cur.execute('DROP TABLE IF EXISTS LOG')
+    return None

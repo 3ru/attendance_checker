@@ -1,5 +1,6 @@
 import settings
-from db import main, output
+from db import main
+from admin import check
 import nfc
 import binascii
 from datetime import datetime
@@ -13,10 +14,9 @@ while True:
         if TYPE == "Type4Tag":
             print("このカードは対応していません⚠\n")
             continue
-        elif TYPE == settings.AT:
-            print("管理者ユーザー\n csvを出力しますか？ y/N")
-            ans = input('>> ')
-            if ans == "y": output()
+        elif ID == settings.AT:
+            check()
+            continue
         user, state = main(ID, TYPE)
         state = "出勤" if state else "退勤"
         print(datetime.now())
