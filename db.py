@@ -56,12 +56,18 @@ def main(uid, card_type):
 def output():
     with sqlite3.connect(dbname) as conn:
         cur = conn.cursor()
-        df = pd.read_sql('SELECT * FROM log', conn)
+        df_log = pd.read_sql('SELECT * FROM log', conn)
+        df_user = pd.read_sql('SELECT * FROM user', conn)
+        df_user.rename(columns={"id": "user_id"}, inplace=True)
+        df = pd.merge(df_log.drop(columns=["id"]), df_user[["user_id", "name"]], on="user_id").drop(columns=["user_id"])
+        df = df.reindex(columns=['time', 'state', 'name']).sort_values("time").rename(
+            columns={"time": "時刻", "state": "勤怠", "name": "名前"})
         n = str(datetime.now()).replace(':', '').replace('.', '').replace('-', '').replace(' ', '')
         df.to_csv(f'logs/{n}_attendance_log.csv', encoding='cp932', index=False)
+        print("logsフォルダ下に出力されました\n")
         cur.close()
     return None
 
 
-
+# output()
 # make_db()
